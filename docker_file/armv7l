@@ -1,8 +1,13 @@
-FROM balenalib/raspberry-pi2:bullseye-build
+FROM balenalib/raspberry-pi2:buster-build
 
 ENV QEMU_EXECVE 1
 
 RUN [ "cross-build-start" ]
+
+# Install latest libdrm-dev package from buster-backports
+RUN echo deb http://deb.debian.org/debian buster-backports main >> /etc/apt/sources.list; \
+    apt-get update; \
+    apt-get -t buster-backports -y --no-install-recommends install libdrm-dev
 
 # Install dependencies
 RUN install_packages \
@@ -21,8 +26,7 @@ RUN install_packages \
 	libssl1.0-dev \
 	libgbm-dev \
 	libturbojpeg0-dev && \
-	libdrm-dev && \
-	cmake
+	apt-get update && apt-get install -y cmake=3.13.4-1 cmake-data=3.13.4-1
 
 RUN [ "cross-build-end" ]
 
