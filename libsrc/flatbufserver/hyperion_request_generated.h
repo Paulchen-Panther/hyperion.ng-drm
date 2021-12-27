@@ -32,7 +32,7 @@ struct Request;
 struct RequestBuilder;
 struct RequestT;
 
-enum ImageType {
+enum ImageType : uint8_t {
   ImageType_NONE = 0,
   ImageType_RawImage = 1,
   ImageType_MIN = ImageType_NONE,
@@ -115,7 +115,7 @@ struct ImageTypeUnion {
 bool VerifyImageType(flatbuffers::Verifier &verifier, const void *obj, ImageType type);
 bool VerifyImageTypeVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
 
-enum Command {
+enum Command : uint8_t {
   Command_NONE = 0,
   Command_Color = 1,
   Command_Image = 2,
@@ -245,11 +245,8 @@ bool VerifyCommandVector(flatbuffers::Verifier &verifier, const flatbuffers::Vec
 
 struct RegisterT : public flatbuffers::NativeTable {
   typedef Register TableType;
-  std::string origin;
-  int32_t priority;
-  RegisterT()
-      : priority(0) {
-  }
+  std::string origin{};
+  int32_t priority = 0;
 };
 
 struct Register FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -268,7 +265,7 @@ struct Register FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t priority() const {
     return GetField<int32_t>(VT_PRIORITY, 0);
   }
-  bool mutate_priority(int32_t _priority) {
+  bool mutate_priority(int32_t _priority = 0) {
     return SetField<int32_t>(VT_PRIORITY, _priority, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
@@ -330,13 +327,9 @@ flatbuffers::Offset<Register> CreateRegister(flatbuffers::FlatBufferBuilder &_fb
 
 struct RawImageT : public flatbuffers::NativeTable {
   typedef RawImage TableType;
-  std::vector<uint8_t> data;
-  int32_t width;
-  int32_t height;
-  RawImageT()
-      : width(-1),
-        height(-1) {
-  }
+  std::vector<uint8_t> data{};
+  int32_t width = -1;
+  int32_t height = -1;
 };
 
 struct RawImage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -356,13 +349,13 @@ struct RawImage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t width() const {
     return GetField<int32_t>(VT_WIDTH, -1);
   }
-  bool mutate_width(int32_t _width) {
+  bool mutate_width(int32_t _width = -1) {
     return SetField<int32_t>(VT_WIDTH, _width, -1);
   }
   int32_t height() const {
     return GetField<int32_t>(VT_HEIGHT, -1);
   }
-  bool mutate_height(int32_t _height) {
+  bool mutate_height(int32_t _height = -1) {
     return SetField<int32_t>(VT_HEIGHT, _height, -1);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
@@ -431,11 +424,8 @@ flatbuffers::Offset<RawImage> CreateRawImage(flatbuffers::FlatBufferBuilder &_fb
 
 struct ImageT : public flatbuffers::NativeTable {
   typedef Image TableType;
-  hyperionnet::ImageTypeUnion data;
-  int32_t duration;
-  ImageT()
-      : duration(-1) {
-  }
+  hyperionnet::ImageTypeUnion data{};
+  int32_t duration = -1;
 };
 
 struct Image FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -462,7 +452,7 @@ struct Image FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t duration() const {
     return GetField<int32_t>(VT_DURATION, -1);
   }
-  bool mutate_duration(int32_t _duration) {
+  bool mutate_duration(int32_t _duration = -1) {
     return SetField<int32_t>(VT_DURATION, _duration, -1);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
@@ -523,10 +513,7 @@ flatbuffers::Offset<Image> CreateImage(flatbuffers::FlatBufferBuilder &_fbb, con
 
 struct ClearT : public flatbuffers::NativeTable {
   typedef Clear TableType;
-  int32_t priority;
-  ClearT()
-      : priority(0) {
-  }
+  int32_t priority = 0;
 };
 
 struct Clear FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -538,7 +525,7 @@ struct Clear FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t priority() const {
     return GetField<int32_t>(VT_PRIORITY, 0);
   }
-  bool mutate_priority(int32_t _priority) {
+  bool mutate_priority(int32_t _priority = 0) {
     return SetField<int32_t>(VT_PRIORITY, _priority, 0);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
@@ -581,12 +568,8 @@ flatbuffers::Offset<Clear> CreateClear(flatbuffers::FlatBufferBuilder &_fbb, con
 
 struct ColorT : public flatbuffers::NativeTable {
   typedef Color TableType;
-  int32_t data;
-  int32_t duration;
-  ColorT()
-      : data(-1),
-        duration(-1) {
-  }
+  int32_t data = -1;
+  int32_t duration = -1;
 };
 
 struct Color FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -599,13 +582,13 @@ struct Color FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t data() const {
     return GetField<int32_t>(VT_DATA, -1);
   }
-  bool mutate_data(int32_t _data) {
+  bool mutate_data(int32_t _data = -1) {
     return SetField<int32_t>(VT_DATA, _data, -1);
   }
   int32_t duration() const {
     return GetField<int32_t>(VT_DURATION, -1);
   }
-  bool mutate_duration(int32_t _duration) {
+  bool mutate_duration(int32_t _duration = -1) {
     return SetField<int32_t>(VT_DURATION, _duration, -1);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
@@ -654,9 +637,7 @@ flatbuffers::Offset<Color> CreateColor(flatbuffers::FlatBufferBuilder &_fbb, con
 
 struct RequestT : public flatbuffers::NativeTable {
   typedef Request TableType;
-  hyperionnet::CommandUnion command;
-  RequestT() {
-  }
+  hyperionnet::CommandUnion command{};
 };
 
 struct Request FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -751,7 +732,7 @@ inline flatbuffers::Offset<Request> CreateRequest(
 flatbuffers::Offset<Request> CreateRequest(flatbuffers::FlatBufferBuilder &_fbb, const RequestT *_o, const flatbuffers::rehasher_function_t *_rehasher = nullptr);
 
 inline RegisterT *Register::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  std::unique_ptr<hyperionnet::RegisterT> _o = std::unique_ptr<hyperionnet::RegisterT>(new RegisterT());
+  auto _o = std::unique_ptr<RegisterT>(new RegisterT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -780,7 +761,7 @@ inline flatbuffers::Offset<Register> CreateRegister(flatbuffers::FlatBufferBuild
 }
 
 inline RawImageT *RawImage::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  std::unique_ptr<hyperionnet::RawImageT> _o = std::unique_ptr<hyperionnet::RawImageT>(new RawImageT());
+  auto _o = std::unique_ptr<RawImageT>(new RawImageT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -788,7 +769,7 @@ inline RawImageT *RawImage::UnPack(const flatbuffers::resolver_function_t *_reso
 inline void RawImage::UnPackTo(RawImageT *_o, const flatbuffers::resolver_function_t *_resolver) const {
   (void)_o;
   (void)_resolver;
-  { auto _e = data(); if (_e) { _o->data.resize(_e->size()); for (flatbuffers::uoffset_t _i = 0; _i < _e->size(); _i++) { _o->data[_i] = _e->Get(_i); } } }
+  { auto _e = data(); if (_e) { _o->data.resize(_e->size()); std::copy(_e->begin(), _e->end(), _o->data.begin()); } }
   { auto _e = width(); _o->width = _e; }
   { auto _e = height(); _o->height = _e; }
 }
@@ -812,7 +793,7 @@ inline flatbuffers::Offset<RawImage> CreateRawImage(flatbuffers::FlatBufferBuild
 }
 
 inline ImageT *Image::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  std::unique_ptr<hyperionnet::ImageT> _o = std::unique_ptr<hyperionnet::ImageT>(new ImageT());
+  auto _o = std::unique_ptr<ImageT>(new ImageT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -844,7 +825,7 @@ inline flatbuffers::Offset<Image> CreateImage(flatbuffers::FlatBufferBuilder &_f
 }
 
 inline ClearT *Clear::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  std::unique_ptr<hyperionnet::ClearT> _o = std::unique_ptr<hyperionnet::ClearT>(new ClearT());
+  auto _o = std::unique_ptr<ClearT>(new ClearT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -870,7 +851,7 @@ inline flatbuffers::Offset<Clear> CreateClear(flatbuffers::FlatBufferBuilder &_f
 }
 
 inline ColorT *Color::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  std::unique_ptr<hyperionnet::ColorT> _o = std::unique_ptr<hyperionnet::ColorT>(new ColorT());
+  auto _o = std::unique_ptr<ColorT>(new ColorT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -899,7 +880,7 @@ inline flatbuffers::Offset<Color> CreateColor(flatbuffers::FlatBufferBuilder &_f
 }
 
 inline RequestT *Request::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  std::unique_ptr<hyperionnet::RequestT> _o = std::unique_ptr<hyperionnet::RequestT>(new RequestT());
+  auto _o = std::unique_ptr<RequestT>(new RequestT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -1138,6 +1119,10 @@ inline const hyperionnet::Request *GetSizePrefixedRequest(const void *buf) {
 
 inline Request *GetMutableRequest(void *buf) {
   return flatbuffers::GetMutableRoot<Request>(buf);
+}
+
+inline hyperionnet::Request *GetMutableSizePrefixedRequest(void *buf) {
+  return flatbuffers::GetMutableSizePrefixedRoot<hyperionnet::Request>(buf);
 }
 
 inline bool VerifyRequestBuffer(

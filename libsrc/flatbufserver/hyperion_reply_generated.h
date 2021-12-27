@@ -14,13 +14,9 @@ struct ReplyT;
 
 struct ReplyT : public flatbuffers::NativeTable {
   typedef Reply TableType;
-  std::string error;
-  int32_t video;
-  int32_t registered;
-  ReplyT()
-      : video(-1),
-        registered(-1) {
-  }
+  std::string error{};
+  int32_t video = -1;
+  int32_t registered = -1;
 };
 
 struct Reply FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -40,13 +36,13 @@ struct Reply FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int32_t video() const {
     return GetField<int32_t>(VT_VIDEO, -1);
   }
-  bool mutate_video(int32_t _video) {
+  bool mutate_video(int32_t _video = -1) {
     return SetField<int32_t>(VT_VIDEO, _video, -1);
   }
   int32_t registered() const {
     return GetField<int32_t>(VT_REGISTERED, -1);
   }
-  bool mutate_registered(int32_t _registered) {
+  bool mutate_registered(int32_t _registered = -1) {
     return SetField<int32_t>(VT_REGISTERED, _registered, -1);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
@@ -114,7 +110,7 @@ inline flatbuffers::Offset<Reply> CreateReplyDirect(
 flatbuffers::Offset<Reply> CreateReply(flatbuffers::FlatBufferBuilder &_fbb, const ReplyT *_o, const flatbuffers::rehasher_function_t *_rehasher = nullptr);
 
 inline ReplyT *Reply::UnPack(const flatbuffers::resolver_function_t *_resolver) const {
-  std::unique_ptr<hyperionnet::ReplyT> _o = std::unique_ptr<hyperionnet::ReplyT>(new ReplyT());
+  auto _o = std::unique_ptr<ReplyT>(new ReplyT());
   UnPackTo(_o.get(), _resolver);
   return _o.release();
 }
@@ -155,6 +151,10 @@ inline const hyperionnet::Reply *GetSizePrefixedReply(const void *buf) {
 
 inline Reply *GetMutableReply(void *buf) {
   return flatbuffers::GetMutableRoot<Reply>(buf);
+}
+
+inline hyperionnet::Reply *GetMutableSizePrefixedReply(void *buf) {
+  return flatbuffers::GetMutableSizePrefixedRoot<hyperionnet::Reply>(buf);
 }
 
 inline bool VerifyReplyBuffer(

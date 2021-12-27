@@ -77,6 +77,12 @@ if (USE_SYSTEM_PROTO_LIBS)
 	find_package(Protobuf REQUIRED)
 else ()
 	set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared protobuf library")
+	set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "Build protobuf shared")
+
+	if (WIN32)
+		set(protobuf_MSVC_STATIC_RUNTIME OFF CACHE BOOL "Build protobuf static")
+	endif()
+
 	add_subdirectory(external/protobuf)
 
 	if(CMAKE_CROSSCOMPILING)
@@ -89,11 +95,13 @@ else ()
 	endif()
 
 	# define the include for the protobuf library at the parent scope
-    set(PROTOBUF_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/external/protobuf/src")
+	set(PROTOBUF_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/external/protobuf/src")
 
 	# define the protoc executable at the parent scope
 	get_property(PROTOBUF_PROTOC_EXECUTABLE TARGET protoc_compiler PROPERTY LOCATION)
 endif()
+option(protobuf_BUILD_TESTS "" OFF)
+
 set(PROTOBUF_PROTOC_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE} PARENT_SCOPE)
 set(PROTOBUF_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS} PARENT_SCOPE)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
@@ -224,64 +232,72 @@ if (NOT USE_SYSTEM_MBEDTLS_LIBS)
 		#-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE
 	)
 
-	set(ENABLE_MBEDTLS_FETCH_CONTENT ON)
+	# set(ENABLE_MBEDTLS_FETCH_CONTENT ON)
 
-	if (ENABLE_MBEDTLS_FETCH_CONTENT AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.11)
+	# if (ENABLE_MBEDTLS_FETCH_CONTENT AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.11)
 
-		include(FetchContent)
+	# 	include(FetchContent)
 
-		FetchContent_Declare(
-			mbedtls
-			GIT_REPOSITORY        https://github.com/ARMmbed/mbedtls.git
-			GIT_TAG               "v2.25.0" # Reset to origin/master if issue https://github.com/ARMmbed/mbedtls/issues/4233 if fixed
-			BUILD_ALWAYS          OFF
-			GIT_PROGRESS          1
-			DOWNLOAD_DIR          "${MBEDTLS_DOWNLOAD_DIR}"
-			SOURCE_DIR            "${MBEDTLS_SOURCE_DIR}"
-			BINARY_DIR            "${MBEDTLS_BINARY_DIR}"
-			INSTALL_DIR           "${MBEDTLS_INSTALL_DIR}"
-			CMAKE_ARGS            ${MBEDTLS_CMAKE_ARGS}
-			BUILD_COMMAND         ""
-			INSTALL_COMMAND       ""
-			LOG_DOWNLOAD          ${MBEDTLS_LOGGING}
-			LOG_UPDATE            ${MBEDTLS_LOGGING}
-			LOG_PATCH             ${MBEDTLS_LOGGING}
-			LOG_CONFIGURE         ${MBEDTLS_LOGGING}
-			LOG_BUILD             ${MBEDTLS_LOGGING}
-			LOG_INSTALL           ${MBEDTLS_LOGGING}
-			LOG_TEST              ${MBEDTLS_LOGGING}
-			LOG_MERGED_STDOUTERR  ${MBEDTLS_LOGGING}
-			LOG_OUTPUT_ON_FAILURE ${MBEDTLS_LOGGING}
-		)
+	# 	FetchContent_Declare(
+	# 		mbedtls
+	# 		GIT_REPOSITORY        https://github.com/ARMmbed/mbedtls.git
+	# 		GIT_TAG               origin/master
+	# 		BUILD_ALWAYS          OFF
+	# 		GIT_PROGRESS          1
+	# 		DOWNLOAD_DIR          "${MBEDTLS_DOWNLOAD_DIR}"
+	# 		SOURCE_DIR            "${MBEDTLS_SOURCE_DIR}"
+	# 		BINARY_DIR            "${MBEDTLS_BINARY_DIR}"
+	# 		INSTALL_DIR           "${MBEDTLS_INSTALL_DIR}"
+	# 		CMAKE_ARGS            ${MBEDTLS_CMAKE_ARGS}
+	# 		BUILD_COMMAND         ""
+	# 		INSTALL_COMMAND       ""
+	# 		LOG_DOWNLOAD          ${MBEDTLS_LOGGING}
+	# 		LOG_UPDATE            ${MBEDTLS_LOGGING}
+	# 		LOG_PATCH             ${MBEDTLS_LOGGING}
+	# 		LOG_CONFIGURE         ${MBEDTLS_LOGGING}
+	# 		LOG_BUILD             ${MBEDTLS_LOGGING}
+	# 		LOG_INSTALL           ${MBEDTLS_LOGGING}
+	# 		LOG_TEST              ${MBEDTLS_LOGGING}
+	# 		LOG_MERGED_STDOUTERR  ${MBEDTLS_LOGGING}
+	# 		LOG_OUTPUT_ON_FAILURE ${MBEDTLS_LOGGING}
+	# 	)
 
-		if (CMAKE_VERSION VERSION_LESS 3.14)
-			macro (FetchContent_MakeAvailable NAME)
-				FetchContent_GetProperties(${NAME})
-				if (NOT ${NAME}_POPULATED)
-					FetchContent_Populate(${NAME})
-					add_subdirectory(${${NAME}_SOURCE_DIR} ${${NAME}_BINARY_DIR})
-				endif ()
-			endmacro ()
-		endif ()
+	# 	if (CMAKE_VERSION VERSION_LESS 3.14)
+	# 		macro (FetchContent_MakeAvailable NAME)
+	# 			FetchContent_GetProperties(${NAME})
+	# 			if (NOT ${NAME}_POPULATED)
+	# 				FetchContent_Populate(${NAME})
+	# 				add_subdirectory(${${NAME}_SOURCE_DIR} ${${NAME}_BINARY_DIR})
+	# 			endif ()
+	# 		endmacro ()
+	# 	endif ()
 
-		FetchContent_MakeAvailable(mbedtls)
-	else ()
-		set(ENABLE_MBEDTLS_FETCH_CONTENT OFF PARENT_SCOPE)
-		if(NOT DEFINED BUILD_MBEDTLS_ONCE)
-			set(BUILD_MBEDTLS_ONCE CACHE INTERNAL "Done")
+	# 	FetchContent_MakeAvailable(mbedtls)
+	# else ()
+	# 	set(ENABLE_MBEDTLS_FETCH_CONTENT OFF PARENT_SCOPE)
+	# 	if(NOT DEFINED BUILD_MBEDTLS_ONCE)
+	# 		set(BUILD_MBEDTLS_ONCE CACHE INTERNAL "Done")
 			configure_file(${CMAKE_SOURCE_DIR}/dependencies/CMakeLists-mbedtls.txt.in ${MBEDTLS_DOWNLOAD_DIR}/CMakeLists.txt @ONLY)
 			execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX:PATH=${MBEDTLS_INSTALL_DIR} -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -G "${CMAKE_GENERATOR}" . WORKING_DIRECTORY ${MBEDTLS_DOWNLOAD_DIR})
 			execute_process(COMMAND ${CMAKE_COMMAND} --build . WORKING_DIRECTORY ${MBEDTLS_DOWNLOAD_DIR})
 			add_subdirectory(${MBEDTLS_SOURCE_DIR} ${MBEDTLS_BINARY_DIR})
-		endif()
-	endif ()
+	# 	endif()
+	# endif ()
 
 	set (MBEDTLS_INCLUDE_DIR "${MBEDTLS_SOURCE_DIR}/include")
 	set (MBEDTLS_INCLUDE_DIR ${MBEDTLS_INCLUDE_DIR} PARENT_SCOPE)
-	if (MBEDTLS_INCLUDE_DIR AND EXISTS "${MBEDTLS_INCLUDE_DIR}/mbedtls/version.h")
-		file(STRINGS "${MBEDTLS_INCLUDE_DIR}/mbedtls/version.h" _MBEDTLS_VERSION_STRING REGEX "^#[\t ]*define[\t ]+MBEDTLS_VERSION_STRING[\t ]+\"[0-9]+.[0-9]+.[0-9]+\"")
-		string(REGEX REPLACE "^.*MBEDTLS_VERSION_STRING.*([0-9]+.[0-9]+.[0-9]+).*" "\\1" MBEDTLS_VERSION "${_MBEDTLS_VERSION_STRING}")
-		message(STATUS "Using static mbedtls libraries (build version \"${MBEDTLS_VERSION}\")")
+	if (MBEDTLS_INCLUDE_DIR)
+		if (EXISTS "${MBEDTLS_INCLUDE_DIR}/mbedtls/build_info.h")
+			file(STRINGS ${MBEDTLS_INCLUDE_DIR}/mbedtls/build_info.h _MBEDTLS_VERSION_LINE REGEX "^#define[ \t]+MBEDTLS_VERSION_STRING[\t ].*")
+			string(REGEX REPLACE ".*MBEDTLS_VERSION_STRING[\t ]+\"(.*)\"" "\\1" MBEDTLS_VERSION ${_MBEDTLS_VERSION_LINE})
+			set (MBEDTLS_VERSION ${MBEDTLS_VERSION} PARENT_SCOPE)
+			message(STATUS "Using static mbedtls libraries (build version \"${MBEDTLS_VERSION}\")")
+		elseif(EXISTS "${MBEDTLS_INCLUDE_DIR}/mbedtls/version.h")
+			file(STRINGS "${MBEDTLS_INCLUDE_DIR}/mbedtls/version.h" _MBEDTLS_VERSION_STRING REGEX "^#[\t ]*define[\t ]+MBEDTLS_VERSION_STRING[\t ]+\"[0-9]+.[0-9]+.[0-9]+\"")
+			string(REGEX REPLACE "^.*MBEDTLS_VERSION_STRING.*([0-9]+.[0-9]+.[0-9]+).*" "\\1" MBEDTLS_VERSION "${_MBEDTLS_VERSION_STRING}")
+			set (MBEDTLS_VERSION ${MBEDTLS_VERSION} PARENT_SCOPE)
+			message(STATUS "Using static mbedtls libraries (build version \"${MBEDTLS_VERSION}\")")
+		endif()
 	endif ()
 
 	include_directories(${MBEDTLS_INCLUDE_DIR})

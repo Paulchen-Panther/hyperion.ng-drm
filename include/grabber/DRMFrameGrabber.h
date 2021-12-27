@@ -4,11 +4,19 @@
 #include <drm_fourcc.h>
 #include <xf86drmMode.h>
 #include <xf86drm.h>
-#include <vc4_drm.h>
 
 // Utils includes
 #include <utils/ColorRgb.h>
 #include <hyperion/Grabber.h>
+
+// #include <EGL/egl.h>
+// #include <EGL/eglext.h>
+
+// #include <GL/gl.h>
+// #include <GL/glext.h>
+
+// #include <GLES2/gl2.h>
+// #include <GLES2/gl2ext.h>
 
 struct DrmProperty
 {

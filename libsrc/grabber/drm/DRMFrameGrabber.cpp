@@ -164,17 +164,18 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 			{
 				_pixelFormat = GetPixelFormatForDrmFormat(framebuffer.second->pixel_format);
 				uint64_t modifier = framebuffer.second->modifier;
+				int fb_dmafd = 0;
 
-				DebugIf(verbose, _log, "Framebuffer ID: %d - Width: %d - Height: %d  - DRM Format: %c%c%c%c - PixelFormat: %s"
-					, framebuffer.first // framebuffer ID
-					, framebuffer.second->width // width
-					, framebuffer.second->height // height
-					, framebuffer.second->pixel_format         & 0xff
-					, (framebuffer.second->pixel_format >> 8)  & 0xff
-					, (framebuffer.second->pixel_format >> 16) & 0xff
-					, (framebuffer.second->pixel_format >> 24) & 0xff
-					, QSTRING_CSTR(pixelFormatToString(_pixelFormat))
-				);
+				// DebugIf(verbose, _log, "Framebuffer ID: %d - Width: %d - Height: %d  - DRM Format: %c%c%c%c - PixelFormat: %s"
+				// 	, framebuffer.first // framebuffer ID
+				// 	, framebuffer.second->width // width
+				// 	, framebuffer.second->height // height
+				// 	, framebuffer.second->pixel_format         & 0xff
+				// 	, (framebuffer.second->pixel_format >> 8)  & 0xff
+				// 	, (framebuffer.second->pixel_format >> 16) & 0xff
+				// 	, (framebuffer.second->pixel_format >> 24) & 0xff
+				// 	, QSTRING_CSTR(pixelFormatToString(_pixelFormat))
+				// );
 
 				if (_pixelFormat != PixelFormat::NO_CHANGE && modifier == DRM_FORMAT_MOD_LINEAR)
 				{
@@ -183,8 +184,9 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 					Grabber::setWidthHeight(w, h);
 
 					int size;
-					struct drm_vc4_mmap_bo map_dumb = {.handle = framebuffer.second->handles[0]};
-					int ret = drmIoctl(_deviceFd, DRM_IOCTL_VC4_MMAP_BO, &map_dumb);
+					int ret = drmPrimeHandleToFD(_deviceFd, framebuffer.second->handles[0], O_RDONLY, &fb_dmafd);
+					// struct drm_vc4_mmap_bo map_dumb = {.handle = framebuffer.second->handles[0]};
+					// int ret = drmIoctl(_deviceFd, DRM_IOCTL_VC4_MMAP_BO, &map_dumb);
 					if (ret < 0)
 					{
 						continue;
@@ -194,11 +196,12 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 					if (_pixelFormat == PixelFormat::I420 || _pixelFormat == PixelFormat::NV12)
 					{
 						size = (w * h * 3) / 2;
-						mmapFrameBuffer = (uint8_t*)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, _deviceFd, map_dumb.offset);
+						mmapFrameBuffer = (uint8_t*)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fb_dmafd, 0);
 						if (mmapFrameBuffer != MAP_FAILED)
 						{
 							_imageResampler.processImage(mmapFrameBuffer, w, h, w, _pixelFormat, image);
 							munmap(mmapFrameBuffer, size);
+							close(fb_dmafd);
 							break;
 						}
 						else
@@ -214,11 +217,12 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 					else if (_pixelFormat == PixelFormat::RGB32 || _pixelFormat == PixelFormat::BGR32)
 					{
 						size = w * h * 4;
-						mmapFrameBuffer = (uint8_t*)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, _deviceFd, map_dumb.offset);
+						mmapFrameBuffer = (uint8_t*)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fb_dmafd, 0);
 						if (mmapFrameBuffer != MAP_FAILED)
 						{
 							_imageResampler.processImage(mmapFrameBuffer, w, h, w * 4, _pixelFormat, image);
 							munmap(mmapFrameBuffer, size);
+							close(fb_dmafd);
 							break;
 						}
 						else
@@ -230,6 +234,8 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 								, strerror(errno)
 							);
 					}
+
+					close(fb_dmafd);
 
 				}
 				else if (_pixelFormat == PixelFormat::NV12 && modifier >> 56ULL == DRM_FORMAT_MOD_VENDOR_BROADCOM)
@@ -269,8 +275,9 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 								}
 							}
 
-							struct drm_vc4_mmap_bo map_dumb = {.handle = framebuffer.second->handles[0]};
-							int ret = drmIoctl(_deviceFd, DRM_IOCTL_VC4_MMAP_BO, &map_dumb);
+							int ret = drmPrimeHandleToFD(_deviceFd, framebuffer.second->handles[0], O_RDONLY, &fb_dmafd);
+							// struct drm_vc4_mmap_bo map_dumb = {.handle = framebuffer.second->handles[0]};
+							// int ret = drmIoctl(_deviceFd, DRM_IOCTL_VC4_MMAP_BO, &map_dumb);
 							if (ret < 0)
 							{
 								continue;
@@ -306,7 +313,7 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 								}
 							}
 
-							uint8_t *src_buf = (uint8_t*)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, _deviceFd, map_dumb.offset);
+							uint8_t *src_buf = (uint8_t*)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fb_dmafd, 0);
 							if (src_buf != MAP_FAILED)
 							{
 								uint8_t *dst_buf = (uint8_t*)malloc(size);
@@ -341,8 +348,11 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 
 								munmap(src_buf, size);
 								free(dst_buf);
+								close(fb_dmafd);
 								break;
 							}
+
+							close(fb_dmafd);
 						}
 
 						case DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED:
@@ -365,6 +375,7 @@ int DRMFrameGrabber::grabFrame(Image<ColorRgb> & image)
 			}
 		}
 	}
+
 
 	freeResources();
 	closeDevice();

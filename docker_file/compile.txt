@@ -1,0 +1,5 @@
+Create Docker image with:
+docker build --progress=plain -t ghcr.io/hyperion-project/armv7l:bookworm -f armv7l .
+
+Compile Hyperion with:
+bin/scripts/docker-compile.sh -i armv7l -t bookworm -b Release -p false -l -c

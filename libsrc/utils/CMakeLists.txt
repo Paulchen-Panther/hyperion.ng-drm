@@ -25,14 +25,8 @@ add_library(hyperion-utils
 	${Utils_SOURCES}
 )
 
-# Find OpenMP
-find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-	target_link_libraries(hyperion-utils OpenMP::OpenMP_CXX)
-endif()
+find_package(LibYUV REQUIRED)
+include_directories(${LIBDRM_INCLUDE_DIRS} ${LibYUV_INCLUDE_DIRS})
 
 target_link_libraries(hyperion-utils
 	hyperion
@@ -40,4 +34,5 @@ target_link_libraries(hyperion-utils
 	Qt5::Core
 	Qt5::Gui
 	Qt5::Network
+	${LibYUV_LIBRARIES}
 )
