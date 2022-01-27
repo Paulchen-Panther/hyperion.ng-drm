@@ -25,8 +25,8 @@ add_library(hyperion-utils
 	${Utils_SOURCES}
 )
 
-find_package(LibYUV REQUIRED)
-include_directories(${LIBDRM_INCLUDE_DIRS} ${LibYUV_INCLUDE_DIRS})
+find_package(JPEG REQUIRED)
+include_directories(${LibYUV_INCLUDE_DIRS})
 
 target_link_libraries(hyperion-utils
 	hyperion
@@ -35,4 +35,5 @@ target_link_libraries(hyperion-utils
 	Qt5::Gui
 	Qt5::Network
 	${LibYUV_LIBRARIES}
+	${JPEG_LIBRARIES}
 )

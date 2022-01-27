@@ -1,12 +1,16 @@
-FROM balenalib/rpi-debian:bookworm-build
+FROM balenalib/raspberry-pi2:buster-build
 
 ENV QEMU_EXECVE 1
 
 RUN [ "cross-build-start" ]
 
+# Install latest libdrm-dev package from buster-backports
+RUN echo deb http://deb.debian.org/debian buster-backports main >> /etc/apt/sources.list; \
+    apt-get update; \
+    apt-get -t buster-backports -y --no-install-recommends install libdrm-dev
+
 # Install dependencies
 RUN install_packages \
-	cmake \
 	python3-dev \
 	qtbase5-dev \
 	libqt5serialport5-dev \
@@ -18,12 +22,9 @@ RUN install_packages \
 	libavahi-core-dev \
 	libavahi-compat-libdnssd-dev \
 	zlib1g-dev \
-	libssl-dev \
-	libgbm-dev \
-	libgles2-mesa-dev \
-	libyuv-dev \
-	libdrm-dev \
-	libturbojpeg0-dev
+	libssl1.0-dev \
+	libturbojpeg0-dev && \
+	apt-get update && apt-get install -y cmake=3.13.4-1 cmake-data=3.13.4-1
 
 RUN [ "cross-build-end" ]
 

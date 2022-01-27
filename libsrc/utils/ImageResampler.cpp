@@ -5,6 +5,20 @@
 // libyuv includes
 #include <libyuv.h>
 
+static uint32_t GetFOURCCForPixelFormat(const PixelFormat format)
+{
+	if (format == PixelFormat::BGR16) return libyuv::FOURCC_RGBP;
+	if (format == PixelFormat::RGB32) return libyuv::FOURCC_ARGB;
+	if (format == PixelFormat::BGR32) return libyuv::FOURCC_ABGR;
+	if (format == PixelFormat::BGR24) return libyuv::FOURCC_24BG;
+	if (format == PixelFormat::YUYV)  return libyuv::FOURCC_YUY2;
+	if (format == PixelFormat::UYVY)  return libyuv::FOURCC_UYVY;
+	if (format == PixelFormat::MJPEG) return libyuv::FOURCC_MJPG;
+	if (format == PixelFormat::NV12)  return libyuv::FOURCC_NV12;
+	if (format == PixelFormat::I420)  return libyuv::FOURCC_I420;
+	return libyuv::FOURCC_ANY;
+};
+
 ImageResampler::ImageResampler()
 	: _horizontalDecimation(8)
 	, _verticalDecimation(8)
@@ -72,8 +86,8 @@ void ImageResampler::processImage(const uint8_t * data, int width, int height, i
 	libyuv::ARGBScale(
 		croppedARGB,
 		croppedWidth * 4,
-		(_flipMode == FlipMode::VERTICAL   || _flipMode == FlipMode::BOTH) ? -abs(croppedWidth)  : croppedWidth,
-		(_flipMode == FlipMode::HORIZONTAL || _flipMode == FlipMode::BOTH) ? -abs(croppedHeight) : croppedHeight,
+		croppedWidth,
+		croppedHeight,
 		scaledARGB,
 		outputWidth * 4,
 		outputWidth,

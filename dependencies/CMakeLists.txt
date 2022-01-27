@@ -232,57 +232,13 @@ if (NOT USE_SYSTEM_MBEDTLS_LIBS)
 		#-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=TRUE
 	)
 
-	# set(ENABLE_MBEDTLS_FETCH_CONTENT ON)
-
-	# if (ENABLE_MBEDTLS_FETCH_CONTENT AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.11)
-
-	# 	include(FetchContent)
-
-	# 	FetchContent_Declare(
-	# 		mbedtls
-	# 		GIT_REPOSITORY        https://github.com/ARMmbed/mbedtls.git
-	# 		GIT_TAG               origin/master
-	# 		BUILD_ALWAYS          OFF
-	# 		GIT_PROGRESS          1
-	# 		DOWNLOAD_DIR          "${MBEDTLS_DOWNLOAD_DIR}"
-	# 		SOURCE_DIR            "${MBEDTLS_SOURCE_DIR}"
-	# 		BINARY_DIR            "${MBEDTLS_BINARY_DIR}"
-	# 		INSTALL_DIR           "${MBEDTLS_INSTALL_DIR}"
-	# 		CMAKE_ARGS            ${MBEDTLS_CMAKE_ARGS}
-	# 		BUILD_COMMAND         ""
-	# 		INSTALL_COMMAND       ""
-	# 		LOG_DOWNLOAD          ${MBEDTLS_LOGGING}
-	# 		LOG_UPDATE            ${MBEDTLS_LOGGING}
-	# 		LOG_PATCH             ${MBEDTLS_LOGGING}
-	# 		LOG_CONFIGURE         ${MBEDTLS_LOGGING}
-	# 		LOG_BUILD             ${MBEDTLS_LOGGING}
-	# 		LOG_INSTALL           ${MBEDTLS_LOGGING}
-	# 		LOG_TEST              ${MBEDTLS_LOGGING}
-	# 		LOG_MERGED_STDOUTERR  ${MBEDTLS_LOGGING}
-	# 		LOG_OUTPUT_ON_FAILURE ${MBEDTLS_LOGGING}
-	# 	)
-
-	# 	if (CMAKE_VERSION VERSION_LESS 3.14)
-	# 		macro (FetchContent_MakeAvailable NAME)
-	# 			FetchContent_GetProperties(${NAME})
-	# 			if (NOT ${NAME}_POPULATED)
-	# 				FetchContent_Populate(${NAME})
-	# 				add_subdirectory(${${NAME}_SOURCE_DIR} ${${NAME}_BINARY_DIR})
-	# 			endif ()
-	# 		endmacro ()
-	# 	endif ()
-
-	# 	FetchContent_MakeAvailable(mbedtls)
-	# else ()
-	# 	set(ENABLE_MBEDTLS_FETCH_CONTENT OFF PARENT_SCOPE)
-	# 	if(NOT DEFINED BUILD_MBEDTLS_ONCE)
-	# 		set(BUILD_MBEDTLS_ONCE CACHE INTERNAL "Done")
+		if(NOT DEFINED BUILD_MBEDTLS_ONCE)
+	 		set(BUILD_MBEDTLS_ONCE CACHE INTERNAL "Done")
 			configure_file(${CMAKE_SOURCE_DIR}/dependencies/CMakeLists-mbedtls.txt.in ${MBEDTLS_DOWNLOAD_DIR}/CMakeLists.txt @ONLY)
 			execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX:PATH=${MBEDTLS_INSTALL_DIR} -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -G "${CMAKE_GENERATOR}" . WORKING_DIRECTORY ${MBEDTLS_DOWNLOAD_DIR})
 			execute_process(COMMAND ${CMAKE_COMMAND} --build . WORKING_DIRECTORY ${MBEDTLS_DOWNLOAD_DIR})
 			add_subdirectory(${MBEDTLS_SOURCE_DIR} ${MBEDTLS_BINARY_DIR})
-	# 	endif()
-	# endif ()
+	 	endif()
 
 	set (MBEDTLS_INCLUDE_DIR "${MBEDTLS_SOURCE_DIR}/include")
 	set (MBEDTLS_INCLUDE_DIR ${MBEDTLS_INCLUDE_DIR} PARENT_SCOPE)
@@ -321,3 +277,13 @@ if (NOT USE_SYSTEM_MBEDTLS_LIBS)
 	mark_as_advanced (MBEDTLS_INCLUDE_DIR MBEDTLS_LIBRARIES MBEDTLS_SSL_LIBRARY MBEDTLS_X509_LIBRARY MBEDTLS_CRYPTO_LIBRARY)
 
 endif (NOT USE_SYSTEM_MBEDTLS_LIBS)
+
+#=============================================================================
+# LIBYUV
+#=============================================================================
+
+add_subdirectory(external/libyuv)
+set(LibYUV_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/external/libyuv/include")
+set(LibYUV_INCLUDE_DIRS ${LibYUV_INCLUDE_DIRS} PARENT_SCOPE)
+set(LibYUV_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}yuv${CMAKE_STATIC_LIBRARY_SUFFIX}" PARENT_SCOPE)
+include_directories(${LibYUV_INCLUDE_DIRS})

@@ -15,6 +15,7 @@ BUILD_TAG="buster"
 BUILD_PACKAGES=true
 # packages string inserted to cmake cmd
 PACKAGES=""
+DEPENDENCIES="-DENABLE_DEPLOY_DEPENDENCIES=OFF"
 # platform string inserted to cmake cmd
 BUILD_PLATFORM=""
 #Run build using GitHub code files
@@ -95,10 +96,10 @@ do
  t) BUILD_TAG=${OPTARG};;
  b) BUILD_TYPE=${OPTARG};;
  p) BUILD_PACKAGES=${OPTARG};;
- f) BUILD_PLATFORM=${OPTARG,,};; 
+ f) BUILD_PLATFORM=${OPTARG,,};;
  l) BUILD_LOCAL=1;;
  c) BUILD_INCREMENTAL=1;;
- v) _VERBOSE=1;;    
+ v) _VERBOSE=1;;
  h) printHelp; exit 0;;
  esac
 done
@@ -106,6 +107,7 @@ done
 # determine package creation
 if [ ${BUILD_PACKAGES} == "true" ]; then
 	PACKAGES="package"
+	DEPENDENCIES="-DENABLE_DEPLOY_DEPENDENCIES=ON"
 fi
 
 # determine platform cmake parameter
@@ -164,7 +166,7 @@ $DOCKER run --rm \
 	-v "${CODE_PATH}/:/source:rw" \
 	${REGISTRY_URL}/${BUILD_IMAGE}:${BUILD_TAG} \
 	/bin/bash -c "mkdir -p /source/${BUILD_DIR} && cd /source/${BUILD_DIR} &&
-	cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${PLATFORM} .. || exit 2 &&
+	cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${DEPENDENCIES} ${PLATFORM} .. || exit 2 &&
 	make -j $(nproc) ${PACKAGES} || exit 3 || : &&
 	exit 0;
 	exit 1 " || { echo "---> Hyperion compilation failed! Abort"; exit 4; }
@@ -181,7 +183,7 @@ if [ ${DOCKERRC} == 0 ]; then
 
 	if [ ${BUILD_PACKAGES} == "true" ]; then
 	 echo "---> Copying packages to host folder: ${DEPLOY_PATH}" &&
-	 cp -v ${BUILD_PATH}/Hyperion-* ${DEPLOY_PATH} 2>/dev/null  
+	 cp -v ${BUILD_PATH}/Hyperion-* ${DEPLOY_PATH} 2>/dev/null
 	 echo "---> Find deployment packages in: ${DEPLOY_PATH}"
 	 sudo chown -fR $(stat -c "%U:%G" ${BASE_PATH}) ${DEPLOY_PATH}
 	fi

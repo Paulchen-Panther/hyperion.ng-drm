@@ -10,3 +10,6 @@
 	path = dependencies/external/protobuf
 	url = https://github.com/hyperion-project/protobuf.git
 	branch = master
+[submodule "dependencies/external/libyuv"]
+	path = dependencies/external/libyuv
+	url = https://chromium.googlesource.com/libyuv/libyuv

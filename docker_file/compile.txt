@@ -3,3 +3,5 @@ docker build --progress=plain -t ghcr.io/hyperion-project/armv7l:bookworm -f arm
 
 Compile Hyperion with:
 bin/scripts/docker-compile.sh -i armv7l -t bookworm -b Release -p false -l -c
+
+https://github.com/jimmysue/playground/tree/6881a991734901fb50d7e0ac9ca8b3740d6aea5b
